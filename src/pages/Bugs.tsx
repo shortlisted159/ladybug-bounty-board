@@ -467,7 +467,10 @@ const Bugs = () => {
                         <Card key={bug.id} className="p-3 text-sm">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-medium">{bug.title}</div>
-                            <Badge className={getSeverityClass(bug.severity)} variant="secondary" className="text-[10px] px-1">
+                            <Badge 
+                              variant="secondary" 
+                              className={`${getSeverityClass(bug.severity)} text-[10px] px-1`}
+                            >
                               {bug.severity}
                             </Badge>
                           </div>
