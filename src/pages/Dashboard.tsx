@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Bug, CheckCircle2, Clock, AlertTriangle, Users } from 'lucide-react';
+import { Bug, CheckCircle2, Clock, AlertTriangle, Users, Medal } from 'lucide-react';
 
 // Mock data for dashboard
 const bugsData = [
@@ -106,7 +105,7 @@ const Dashboard = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium flex items-center gap-2">
-              <Award className="h-5 w-5 text-orange" /> Bounty Progress
+              <Medal className="h-5 w-5 text-orange" /> Bounty Progress
             </CardTitle>
             <CardDescription>Goal completion status</CardDescription>
           </CardHeader>

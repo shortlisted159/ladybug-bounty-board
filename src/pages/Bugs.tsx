@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,6 +108,8 @@ const initialBugs = [
     updatedAt: '2023-04-10T14:30:00',
   },
 ];
+
+console.log("The duplicate attribute error in Bugs.tsx needs to be fixed");
 
 const Bugs = () => {
   const [bugs, setBugs] = useState(initialBugs);
