@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,81 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { CalendarIcon, Check, Download, FileDown, FileText, Filter, Users } from 'lucide-react';
-import { DateRangePicker } from "@/components/DateRangePicker";
 import { format } from "date-fns";
-import { Calendar as CalendarPrimitive } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-// Date Range Picker Component
-// Since we don't have direct access to the component, we'll create a simplified version
-const DateRangePicker = ({ onChange }) => {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  
-  const handleDateChange = (field, value) => {
-    if (field === 'from') {
-      setStartDate(value);
-    } else {
-      setEndDate(value);
-    }
-    
-    if (value && field === 'from' && endDate) {
-      onChange({ from: value, to: endDate });
-    } else if (value && field === 'to' && startDate) {
-      onChange({ from: startDate, to: value });
-    }
-  };
-  
-  return (
-    <div className="flex flex-col md:flex-row gap-2">
-      <div className="grid gap-2 w-full">
-        <Label>Start Date</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <CalendarPrimitive
-              mode="single"
-              selected={startDate}
-              onSelect={(date) => handleDateChange('from', date)}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-      <div className="grid gap-2 w-full">
-        <Label>End Date</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <CalendarPrimitive
-              mode="single"
-              selected={endDate}
-              onSelect={(date) => handleDateChange('to', date)}
-              initialFocus
-              disabled={(date) => startDate && date < startDate}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-    </div>
-  );
-};
+import CustomDateRangePicker from '@/components/CustomDateRangePicker';
 
 const Export = () => {
   const [dateRange, setDateRange] = useState(null);
@@ -166,7 +92,7 @@ const Export = () => {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label>Date Range</Label>
-                <DateRangePicker onChange={setDateRange} />
+                <CustomDateRangePicker onChange={setDateRange} />
               </div>
               
               <div className="space-y-4">
