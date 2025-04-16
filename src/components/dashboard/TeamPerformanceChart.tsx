@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { Users } from 'lucide-react';
 
 interface TeamData {
@@ -28,12 +28,13 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({ data }) => 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
-              layout="vertical"
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" width={80} />
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
               <Tooltip />
+              <Legend />
               <Bar dataKey="bugs" name="Bugs Reported" fill="#F4A896" />
               <Bar dataKey="resolved" name="Bugs Resolved" fill="#358597" />
             </BarChart>

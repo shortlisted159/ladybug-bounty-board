@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import { Plus, Trash2, Edit, UserPlus } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from "@/hooks/use-toast";
 
 // Mock data for teams
 const initialTeams = [
@@ -72,6 +72,112 @@ const Teams = () => {
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
   const [showNewBucketDialog, setShowNewBucketDialog] = useState(false);
   const [showNewMemberDialog, setShowNewMemberDialog] = useState(false);
+  const [editTeam, setEditTeam] = useState(null);
+  const [editBucket, setEditBucket] = useState(null);
+  const [editMember, setEditMember] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showEditBucketDialog, setShowEditBucketDialog] = useState(false);
+  const [showEditMemberDialog, setShowEditMemberDialog] = useState(false);
+  
+  const handleDeleteTeam = (teamId) => {
+    setTeams(teams.filter(team => team.id !== teamId));
+    toast({
+      title: "Team deleted",
+      description: "The team has been successfully removed",
+    });
+  };
+
+  const handleDeleteBucket = (bucketId) => {
+    setBuckets(buckets.filter(bucket => bucket.id !== bucketId));
+    toast({
+      title: "Bucket deleted",
+      description: "The bucket has been successfully removed",
+    });
+  };
+
+  const handleDeleteMember = (teamId, memberId) => {
+    setTeams(teams.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          members: team.members.filter(member => member.id !== memberId)
+        };
+      }
+      return team;
+    }));
+    toast({
+      title: "Member removed",
+      description: "Team member has been successfully removed",
+    });
+  };
+
+  const handleEditTeam = (team) => {
+    setEditTeam(team);
+    setShowEditDialog(true);
+  };
+
+  const handleEditBucket = (bucket) => {
+    setEditBucket(bucket);
+    setShowEditBucketDialog(true);
+  };
+
+  const handleEditMember = (teamId, member) => {
+    setEditMember({...member, teamId});
+    setShowEditMemberDialog(true);
+  };
+
+  const handleUpdateTeam = () => {
+    if (editTeam && editTeam.name) {
+      setTeams(teams.map(team => 
+        team.id === editTeam.id ? editTeam : team
+      ));
+      setEditTeam(null);
+      setShowEditDialog(false);
+      toast({
+        title: "Team updated",
+        description: "The team has been successfully updated",
+      });
+    }
+  };
+
+  const handleUpdateBucket = () => {
+    if (editBucket && editBucket.name && editBucket.assignedTo.length > 0) {
+      setBuckets(buckets.map(bucket => 
+        bucket.id === editBucket.id ? editBucket : bucket
+      ));
+      setEditBucket(null);
+      setShowEditBucketDialog(false);
+      toast({
+        title: "Bucket updated",
+        description: "The bucket has been successfully updated",
+      });
+    }
+  };
+
+  const handleUpdateMember = () => {
+    if (editMember && editMember.name && editMember.designation) {
+      const updatedTeams = teams.map(team => {
+        if (team.id === editMember.teamId) {
+          return {
+            ...team,
+            members: team.members.map(member => 
+              member.id === editMember.id ? 
+              {id: member.id, name: editMember.name, designation: editMember.designation} : 
+              member
+            )
+          };
+        }
+        return team;
+      });
+      setTeams(updatedTeams);
+      setEditMember(null);
+      setShowEditMemberDialog(false);
+      toast({
+        title: "Member updated",
+        description: "Team member has been successfully updated",
+      });
+    }
+  };
 
   const handleNewTeamSubmit = () => {
     if (newTeam.name) {
@@ -84,6 +190,10 @@ const Teams = () => {
       setTeams([...teams, team]);
       setNewTeam({ name: '', description: '' });
       setShowNewTeamDialog(false);
+      toast({
+        title: "Team created",
+        description: "New team has been successfully created",
+      });
     }
   };
 
@@ -98,6 +208,10 @@ const Teams = () => {
       setBuckets([...buckets, bucket]);
       setNewBucket({ name: '', description: '', assignedTo: [] });
       setShowNewBucketDialog(false);
+      toast({
+        title: "Bucket created",
+        description: "New bucket has been successfully created",
+      });
     }
   };
 
@@ -122,13 +236,17 @@ const Teams = () => {
       setTeams(updatedTeams);
       setNewMember({ name: '', designation: '', teamId: null });
       setShowNewMemberDialog(false);
+      toast({
+        title: "Member added",
+        description: "New team member has been successfully added",
+      });
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-charcoal">Teams & Buckets</h1>
+        <h1 className="text-3xl font-bold text-foreground">Teams & Buckets</h1>
       </div>
 
       <Tabs defaultValue="teams" className="w-full">
@@ -178,6 +296,80 @@ const Teams = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Team</DialogTitle>
+                  <DialogDescription>
+                    Update team information.
+                  </DialogDescription>
+                </DialogHeader>
+                {editTeam && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-team-name">Team Name</Label>
+                      <Input
+                        id="edit-team-name"
+                        value={editTeam.name}
+                        onChange={(e) => setEditTeam({ ...editTeam, name: e.target.value })}
+                        placeholder="Enter team name"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-team-description">Description</Label>
+                      <Input
+                        id="edit-team-description"
+                        value={editTeam.description}
+                        onChange={(e) => setEditTeam({ ...editTeam, description: e.target.value })}
+                        placeholder="Enter team description"
+                      />
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+                  <Button className="bg-teal hover:bg-teal/80" onClick={handleUpdateTeam}>Update Team</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showEditMemberDialog} onOpenChange={setShowEditMemberDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Team Member</DialogTitle>
+                  <DialogDescription>
+                    Update team member information.
+                  </DialogDescription>
+                </DialogHeader>
+                {editMember && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-member-name">Name</Label>
+                      <Input
+                        id="edit-member-name"
+                        value={editMember.name}
+                        onChange={(e) => setEditMember({ ...editMember, name: e.target.value })}
+                        placeholder="Enter member name"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-member-designation">Designation</Label>
+                      <Input
+                        id="edit-member-designation"
+                        value={editMember.designation}
+                        onChange={(e) => setEditMember({ ...editMember, designation: e.target.value })}
+                        placeholder="Enter designation"
+                      />
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowEditMemberDialog(false)}>Cancel</Button>
+                  <Button className="bg-teal hover:bg-teal/80" onClick={handleUpdateMember}>Update Member</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -186,49 +378,22 @@ const Teams = () => {
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle>{team.name}</CardTitle>
-                    <Dialog open={showNewMemberDialog} onOpenChange={setShowNewMemberDialog}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => setNewMember({ ...newMember, teamId: team.id })}
-                        >
-                          <UserPlus className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Add Team Member</DialogTitle>
-                          <DialogDescription>
-                            Add a new member to {teams.find(t => t.id === newMember.teamId)?.name || 'the team'}.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="member-name">Name</Label>
-                            <Input
-                              id="member-name"
-                              value={newMember.name}
-                              onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                              placeholder="Enter member name"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor="member-designation">Designation</Label>
-                            <Input
-                              id="member-designation"
-                              value={newMember.designation}
-                              onChange={(e) => setNewMember({ ...newMember, designation: e.target.value })}
-                              placeholder="Enter designation"
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setShowNewMemberDialog(false)}>Cancel</Button>
-                          <Button className="bg-teal hover:bg-teal/80" onClick={handleNewMemberSubmit}>Add Member</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <div className="flex">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleEditTeam(team)}
+                      >
+                        <Edit className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleDeleteTeam(team.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                   <CardDescription>{team.description}</CardDescription>
                 </CardHeader>
@@ -248,10 +413,18 @@ const Teams = () => {
                           </div>
                         </div>
                         <div className="flex">
-                          <Button variant="ghost" size="icon">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleEditMember(team.id, member)}
+                          >
                             <Edit className="h-4 w-4 text-muted-foreground" />
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDeleteMember(team.id, member.id)}
+                          >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
@@ -264,6 +437,52 @@ const Teams = () => {
                     )}
                   </div>
                 </CardContent>
+                <div className="flex justify-center pb-4">
+                  <Dialog open={showNewMemberDialog} onOpenChange={setShowNewMemberDialog}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setNewMember({ ...newMember, teamId: team.id })}
+                        className="flex items-center gap-2"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Add Member
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Team Member</DialogTitle>
+                        <DialogDescription>
+                          Add a new member to {teams.find(t => t.id === newMember.teamId)?.name || 'the team'}.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="member-name">Name</Label>
+                          <Input
+                            id="member-name"
+                            value={newMember.name}
+                            onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                            placeholder="Enter member name"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="member-designation">Designation</Label>
+                          <Input
+                            id="member-designation"
+                            value={newMember.designation}
+                            onChange={(e) => setNewMember({ ...newMember, designation: e.target.value })}
+                            placeholder="Enter designation"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowNewMemberDialog(false)}>Cancel</Button>
+                        <Button className="bg-teal hover:bg-teal/80" onClick={handleNewMemberSubmit}>Add Member</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </Card>
             ))}
           </div>
@@ -337,6 +556,70 @@ const Teams = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            <Dialog open={showEditBucketDialog} onOpenChange={setShowEditBucketDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Bucket</DialogTitle>
+                  <DialogDescription>
+                    Update bucket information.
+                  </DialogDescription>
+                </DialogHeader>
+                {editBucket && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-bucket-name">Bucket Name</Label>
+                      <Input
+                        id="edit-bucket-name"
+                        value={editBucket.name}
+                        onChange={(e) => setEditBucket({ ...editBucket, name: e.target.value })}
+                        placeholder="Enter bucket name"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-bucket-description">Description</Label>
+                      <Input
+                        id="edit-bucket-description"
+                        value={editBucket.description}
+                        onChange={(e) => setEditBucket({ ...editBucket, description: e.target.value })}
+                        placeholder="Enter bucket description"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Assigned Teams</Label>
+                      {teams.map((team) => (
+                        <div key={team.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`edit-team-${team.id}`}
+                            checked={editBucket.assignedTo.includes(team.name)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEditBucket({
+                                  ...editBucket,
+                                  assignedTo: [...editBucket.assignedTo, team.name],
+                                });
+                              } else {
+                                setEditBucket({
+                                  ...editBucket,
+                                  assignedTo: editBucket.assignedTo.filter((name) => name !== team.name),
+                                });
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <Label htmlFor={`edit-team-${team.id}`}>{team.name}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowEditBucketDialog(false)}>Cancel</Button>
+                  <Button className="bg-coral hover:bg-coral/80 text-charcoal" onClick={handleUpdateBucket}>Update Bucket</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -346,10 +629,18 @@ const Teams = () => {
                   <div className="flex items-center justify-between">
                     <CardTitle>{bucket.name}</CardTitle>
                     <div className="flex">
-                      <Button variant="ghost" size="icon">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleEditBucket(bucket)}
+                      >
                         <Edit className="h-4 w-4 text-muted-foreground" />
                       </Button>
-                      <Button variant="ghost" size="icon">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleDeleteBucket(bucket.id)}
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
